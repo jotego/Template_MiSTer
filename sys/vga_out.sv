@@ -36,6 +36,7 @@ always @(posedge clk) begin
 	reg hsync2, vsync2, csync2;
 	reg hsync1, vsync1, csync1;
 
+	/* verilator lint_off WIDTH */
 	y_1r  <= 19'd04096 + ({red, 8'd0} + {red, 3'd0});
 	pb_1r <= 19'd32768 - ({red, 7'd0} + {red, 4'd0} + {red, 3'd0});
 	pr_1r <= 19'd32768 + ({red, 8'd0} + {red, 7'd0} + {red, 6'd0});
@@ -55,6 +56,7 @@ always @(posedge clk) begin
 	y  <= ( y_2[18] ||  !y_2[17:12]) ? 8'd16 : (y_2[17:8] > 235) ? 8'd235 :  y_2[15:8];
 	pb <= (pb_2[18] || !pb_2[17:12]) ? 8'd16 : (&pb_2[17:12])    ? 8'd240 : pb_2[15:8];
 	pr <= (pr_2[18] || !pr_2[17:12]) ? 8'd16 : (&pr_2[17:12])    ? 8'd240 : pr_2[15:8];
+	/* verilator lint_on WIDTH */
 
 	hsync_o <= hsync2; hsync2 <= hsync1; hsync1 <= hsync;
 	vsync_o <= vsync2; vsync2 <= vsync1; vsync1 <= vsync;

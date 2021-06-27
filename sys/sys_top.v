@@ -1255,45 +1255,38 @@ wire vga_cs_osd;
 csync csync_vga(clk_vid, vga_hs_osd, vga_vs_osd, vga_cs_osd);
 
 `ifndef MISTER_DUAL_SDRAM
-	wire [23:0] vgas_o;
-	wire vgas_hs, vgas_vs, vgas_cs;
-	vga_out vga_scaler_out
-	(
-		.clk(clk_hdmi),
-		.ypbpr_en(ypbpr_en),
-		.hsync(hdmi_hs_osd),
-		.vsync(hdmi_vs_osd),
-		.csync(hdmi_cs_osd),
-		.dout(vgas_o),
-		.din({24{hdmi_de_osd}} & hdmi_data_osd),
-		.hsync_o(vgas_hs),
-		.vsync_o(vgas_vs),
-		.csync_o(vgas_cs)
-	);
+vga_top vga_top(
+    .clk_hdmi		( clk_hdmi		),
+    .clk_vid		( clk_vid		),
 
-	wire [23:0] vga_o;
-	wire vga_hs, vga_vs, vga_cs;
-	vga_out vga_out
-	(
-		.clk(clk_vid),
-		.ypbpr_en(ypbpr_en),
-		.hsync(vga_hs_osd),
-		.vsync(vga_vs_osd),
-		.csync(vga_cs_osd),
-		.dout(vga_o),
-		.din(vga_data_osd),
-		.hsync_o(vga_hs),
-		.vsync_o(vga_vs),
-		.csync_o(vga_cs)
-	);
+    // Configuration
+    .ypbpr_en		( ypbpr_en		),
+    .csync_en		( csync_en		),
+    .vga_fb			( vga_fb		),
+    .vga_scaler		( vga_scaler	),
+    .oen_b			( SW[3]			),        // output enable (active low)
 
-	wire cs1 = (vga_fb | vga_scaler) ? vgas_cs : vga_cs;
+    // Scaler version
+    .hdmi_hs_osd	( hdmi_hs_osd	),
+    .hdmi_vs_osd	( hdmi_vs_osd	),
+    .hdmi_cs_osd	( hdmi_cs_osd	),
+    .hdmi_de_osd	( hdmi_de_osd	),
+    .hdmi_data_osd	( hdmi_data_osd	),
 
-	assign VGA_VS = (VGA_EN | SW[3]) ? 1'bZ      : ((vga_fb | vga_scaler) ? ~vgas_vs : ~vga_vs) | csync_en;
-	assign VGA_HS = (VGA_EN | SW[3]) ? 1'bZ      :  (vga_fb | vga_scaler) ? (csync_en ? ~vgas_cs : ~vgas_hs) : (csync_en ? ~vga_cs : ~vga_hs);
-	assign VGA_R  = (VGA_EN | SW[3]) ? 6'bZZZZZZ :  (vga_fb | vga_scaler) ? vgas_o[23:18] : vga_o[23:18];
-	assign VGA_G  = (VGA_EN | SW[3]) ? 6'bZZZZZZ :  (vga_fb | vga_scaler) ? vgas_o[15:10] : vga_o[15:10];
-	assign VGA_B  = (VGA_EN | SW[3]) ? 6'bZZZZZZ :  (vga_fb | vga_scaler) ? vgas_o[7:2]   : vga_o[7:2]  ;
+    // Regular version
+    .vga_hs_osd		( vga_hs_osd	),
+    .vga_vs_osd		( vga_vs_osd	),
+    .vga_cs_osd		( vga_cs_osd	),
+    .vga_data_osd	( vga_data_osd	),
+
+    // FPGA pins
+    .VGA_ENB		( VGA_EN 		),
+    .VGA_R			( VGA_R			),
+    .VGA_G			( VGA_G			),
+    .VGA_B			( VGA_B			),
+    .VGA_HS			( VGA_HS		),  // VGA_HS is secondary SD card detect when VGA_ENB = 1 (inactive)
+    .VGA_VS			( VGA_VS		)
+);
 `endif
 
 reg video_sync = 0;
